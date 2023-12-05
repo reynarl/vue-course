@@ -1,18 +1,46 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import BlogPost from './components/BlogPost.vue';
 import ButtonPagination from './components/ButtonPagination.vue';
+import Spinner from './components/Spinner.vue'
 
 
 const posts = ref([])
 const favorite = ref('')
 const start = ref(0)
 const end = ref(10)
+const loading = ref(true)
 
-fetch('https://jsonplaceholder.typicode.com/posts')
-.then((res)=> res.json())
-.then((data)=> posts.value = data)
+// fetch('https://jsonplaceholder.typicode.com/posts')
+//   .then((res)=> res.json())
+//   .then((data)=> posts.value = data)
+//   .catch(e => console.log(e))
+//   .finally(() => loading.value = false)
+
+// onMounted(async () => {
+//   try {
+//     const res = await fetch('https://jsonplaceholder.typicode.com/posts')
+//     posts.value = await res.json()
+//   } catch (error) {
+//     console.log(error);
+//   } finally {
+//     loading.value = false
+//   }
+// })
+
+const fetchData = async () => {
+  try {
+    const res = await fetch('https://jsonplaceholder.typicode.com/posts')
+    posts.value = await res.json()
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false
+  }
+}
+
+fetchData()
 
 
 const changeFavoritePost = (title) => {
@@ -21,6 +49,9 @@ const changeFavoritePost = (title) => {
 
 //buttons
 const handleChangeBtnNext = () => {
+  end.value = end.value + 10
+  start.value = start.value + 10
+
   // if(end.value >= posts.value.length){
   //   end.value = 10
   //   start.value = 0
@@ -28,9 +59,6 @@ const handleChangeBtnNext = () => {
   //   end.value = end.value + 10
   //   start.value = start.value + 10
   // }
-
-  end.value = end.value + 10
-  start.value = start.value + 10
 }
 
 const handleChangeBtnPrev = () => {
@@ -45,9 +73,12 @@ const maxLength = computed(() => posts.value.length)
 
 <template>
   <div class="container">
-    <h1>APP</h1>
+    <h1>POSTS</h1>
     <p>Favorito: {{ favorite ? favorite : 'Clickea un post favorito' }}</p>
-    <ButtonPagination 
+    <Spinner v-if="loading" />
+
+    <div v-else>
+      <ButtonPagination 
       class="mb-3"
       :start="start"
       :end="end"
@@ -64,5 +95,6 @@ const maxLength = computed(() => posts.value.length)
       @changeFavoritePost = "changeFavoritePost"
     >
   </BlogPost>
+    </div>
   </div>
 </template>
